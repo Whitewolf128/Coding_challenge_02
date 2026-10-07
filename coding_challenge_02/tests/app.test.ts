@@ -25,3 +25,19 @@ describe("GET /api/v1/health", () => {
         expect(response.body).toHaveProperty("version");
     });
 });
+
+describe("POST /api/v1/events", () => {
+    it("should create an event from a JSON request body", async () => {
+        const response: Response = await request(app)
+            .post("/api/v1/events")
+            .send({ name: "Community meetup", description: "A local gathering" });
+
+        expect(response.status).toBe(201);
+        expect(response.body.message).toBe("Event created");
+        expect(response.body.data).toMatchObject({
+            name: "Community meetup",
+            capacity: 0,
+            registrationCount: 0,
+        });
+    });
+});

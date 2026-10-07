@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { createEvent, getAllEvents } from "../services/eventService";
+import { createEvent, getAllEvents} from "../services/eventService";
 import { HTTP_STATUS } from "../../../constants/httpConstants";
 import { Event } from "../models/eventModel";
 import * as eventService from "../services/eventService";
@@ -32,6 +32,7 @@ export const createEventsController = async (req: Request,
         const {
             id,
             name,
+            description,
             date,
             capacity,
             registrationCount,
@@ -41,23 +42,20 @@ export const createEventsController = async (req: Request,
  
         const event: Event =
         {
-            id,
             name,
             date,
             capacity,
             registrationCount,
             createdAt,
-            updatedAt
+            updatedAt,
+            id
         };
  
-        const createdEvent: Event = await createEvent({
-            name: event.name,
-            description: req.body.description
-        });
+        const events: Event = await createEvent({ name, description });
  
         res.status(HTTP_STATUS.CREATED).json
         ({  message: "Event created",
-            data: createdEvent
+            data: events
         });
     }
     catch (error: unknown)
@@ -69,16 +67,18 @@ export const createEventsController = async (req: Request,
 };
 
 export const updateEventController = (req: Request, res: Response): void => {
-    try {
+    try{
         const { id } = req.params;
-        const updatedEvent: { name: any; description: any } = req.body;
-        eventService.updateEvent(Array.isArray(id) ? id[0] : id, updatedEvent);
-        res.status(HTTP_STATUS.OK).json({ message: "Event updated", data: updatedEvent });
-    } catch (error: unknown) {
+    const updatedEvent: Pick<Event, "name" | "date" | "capacity" | "registrationCount" | "createdAt" | "updatedAt"> = req.body;
+    eventService.updateEvent(Array.isArray(id) ? id[0] : id, updatedEvent);
+    res.status(HTTP_STATUS.OK).json({ message: "Event updated", data: updateEventController });
+    }
+    catch(error:unknown){
         res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
             message: "Failed to update event"
         });
     }
+    
 };
 
 export const deleteEventController = (req: Request, res: Response): void => {
