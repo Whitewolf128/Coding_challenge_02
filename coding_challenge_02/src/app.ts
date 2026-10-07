@@ -1,6 +1,7 @@
 // import the express application and type definition
 import express, { Express } from "express";
-
+import morgan from "morgan";
+import eventRoutes from "../src/api/v1/routes/eventRoute";
 // initialize the express application
 const app: Express = express();
 
@@ -13,6 +14,7 @@ interface HealthCheckResponse {
     version: string;
 }
 
+app.use(morgan("combined"));
 // respond to GET request at endpoint "/" with message
 app.get("/", (req, res) => {
     res.send("Hello World");
@@ -32,5 +34,7 @@ app.get("/api/v1/health", (req, res) => {
 
     res.json(healthData);
 });
+
+app.use("/api/v1/events", eventRoutes);
 
 export default app;
