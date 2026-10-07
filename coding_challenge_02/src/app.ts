@@ -2,6 +2,7 @@
 import express, { Express } from "express";
 import morgan from "morgan";
 import eventRoutes from "../src/api/v1/routes/eventRoute";
+import router from "../src/api/v1/routes/eventRoute";
 // initialize the express application
 const app: Express = express();
 
@@ -35,6 +36,6 @@ app.get("/api/v1/health", (req, res) => {
     res.json(healthData);
 });
 
-app.use("/api/v1/events", eventRoutes);
+app.use("/api/v1/", router);
 
 export default app;

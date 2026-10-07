@@ -1,99 +1,95 @@
-import {Request, Response, NextFunction} from "express";
-import {HTTP_STATUS} from "../../../constants/httpConstants";
+import { Request, Response, NextFunction } from "express";
+import { createEvent, getAllEvents } from "../services/eventService";
+import { HTTP_STATUS } from "../../../constants/httpConstants";
+import { Event } from "../models/eventModel";
 import * as eventService from "../services/eventService";
-import type { Event } from "../models/eventModel";
 
-export const getAllEvents = async (
-  _req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const events: Event[] = await eventService.getAllEvents();
-    res.status(HTTP_STATUS.OK).json({
-      message: "Events retrieved successfully",
-      data: events,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
 
-export const createEvent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
+export const getAllEventsController = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
 ): Promise<void> => {
-    try 
-    {
-        // Basic validation - check for required fields
-        if (!req.body.name) {
-            res.status(HTTP_STATUS.BAD_REQUEST).json({
-                message: "Event name is required",
-            });
-        }  
-        else if (!req.body.description)    
+    try {
+        const events: Event[] = await getAllEvents();
+        res.status(200).json(
         {
-            res.status(HTTP_STATUS.BAD_REQUEST).json({
-                message: "Event description is required",
-            });
-        } 
-        else {
-            // Extract only the fields we need
-            const { name, description } = req.body;
-
-            const eventData = { name, description };
-
-            const newEvent = await eventService.createEvent(eventData);
-            res.status(HTTP_STATUS.CREATED).json({
-                message: "Item created successfully",
-                data: newEvent,
-            });
-        }
-    } 
-    catch (error) 
+            "message": "events Retrieved",
+            count: events.length,
+            data: events
+        })
+    } catch (error: unknown) {
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to get events"
+        })
+    }
+};
+export const createEventsController = async (req: Request,
+    res: Response, next: NextFunction): Promise<void> =>
+{
+    try
     {
-        next(error);
+        const {
+            id,
+            name,
+            date,
+            capacity,
+            registrationCount,
+            createdAt,
+            updatedAt
+        } = req.body;
+ 
+        const event: Event =
+        {
+            id,
+            name,
+            date,
+            capacity,
+            registrationCount,
+            createdAt,
+            updatedAt
+        };
+ 
+        const createdEvent: Event = await createEvent({
+            name: event.name,
+            description: req.body.description
+        });
+ 
+        res.status(HTTP_STATUS.CREATED).json
+        ({  message: "Event created",
+            data: createdEvent
+        });
+    }
+    catch (error: unknown)
+    {
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to create event"
+        });
     }
 };
 
-export const updateEvent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const id = Array.isArray(req.params.id) ? req.params.id[0] ?? "" : req.params.id;
-
-    // Extract update fields
-    const { name, description } = req.body;
-
-    // Create update data object with only the fields that can be updated
-    const updateData = { name, description };
-
-    const updateEvent = await eventService.updateEvent(id, updateData);
-    res.status(HTTP_STATUS.OK).json({
-      message: "Item updated successfully",
-      data: updateEvent,
-    });
-  } catch (error) {
-    next(error);
-  }
+export const updateEventController = (req: Request, res: Response): void => {
+    try {
+        const { id } = req.params;
+        const updatedEvent: { name: any; description: any } = req.body;
+        eventService.updateEvent(Array.isArray(id) ? id[0] : id, updatedEvent);
+        res.status(HTTP_STATUS.OK).json({ message: "Event updated", data: updatedEvent });
+    } catch (error: unknown) {
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to update event"
+        });
+    }
 };
 
-export const deleteEvent = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> => {
-  try {
-    const id = Array.isArray(req.params.id) ? req.params.id[0] ?? "" : req.params.id;
-
-    eventService.deleteEvent(id);
-    res.status(HTTP_STATUS.OK).json({
-      message: "Event deleted successfully",
-    });
-  } catch (error) {
-    next(error);
-  }
+export const deleteEventController = (req: Request, res: Response): void => {
+    try{
+        const { id } = req.params;
+    eventService.deleteEvent(Array.isArray(id) ? id[0] : id);
+    res.status(HTTP_STATUS.OK).json({ message: "Event deleted" });
+    } catch (error: unknown) {
+        res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({
+            message: "Failed to Delete event",
+        });
+    }
+    
 };
