@@ -89,7 +89,7 @@ export const deleteEvent = async (
   try {
     const id = Array.isArray(req.params.id) ? req.params.id[0] ?? "" : req.params.id;
 
-    await eventService.deleteEvent(id);
+    eventService.deleteEvent(id);
     res.status(HTTP_STATUS.OK).json({
       message: "Event deleted successfully",
     });
